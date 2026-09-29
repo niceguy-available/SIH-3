@@ -1,0 +1,33 @@
+{
+  "summary": "Verified iteration_4 UX additions for failed/queued/completed run explanation and upload auto-fetch nudge. Backend contract for failed run 61f22fcc-... confirmed (status=failed, metrics=null, match_points=[], diagnostics populated with 1 entry, quality_gate.checks has 9 populated failing checks). Frontend: (1) Opening failed run from /runs navigates to workspace and shows data-testid=results-status-note with title 'No valid transform found' and body containing the diagnostics and lat/long guidance, run-outcome-title shows 'Registration rejected', metric-rmse-value shows 'N/A' (i.e. no value). (2) Opening completed run 78cd45c9-... shows NO results-status-note and metric-rmse-value=0.186. (3) Uploading a small PNG via source-image-input with no reference selected auto-populated reference-catalog-select (WAC mosaic), enabled run-registration-btn, and produced the exact nudge toast 'Auto-matched cached WAC Hapke 7-Band Mosaic · enter the frame lat/long for a closer regional match'. (4) Coordinates optional: latitude/longitude inputs are labelled '(optional)', help text explicitly says 'Coordinates are optional', button label is 'Auto-fetch best match' when both blank, and clicking it succeeded and rendered 'Reused cached WAC Hapke 7-Band Mosaic' in auto-reference-status. Note: metric tiles for a failed run render as 'N/A' rather than the em-dash '—' mentioned in the review request, because format(null,...) returns 'N/A'. Semantically identical (no numeric value); flagging as informational only.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "ReferenceControls <select>", "issues": ["Pre-existing: React hydration warning — a <span data-ve-dynamic> wrapper is rendered inside <option>, which HTML disallows. Non-fatal but throws a console error on every workspace load. Already reported in iteration_3."]},
+      {"screen": "ResultsPanel metric tiles on failed runs", "issues": ["Review request expected em-dash '—' for metrics of failed runs, actual rendering is 'N/A' (from format(null)). Cosmetic only; both convey 'no value'. Consider aligning with review contract by returning '—' from format(null) or updating docs."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_auto_reference.py",
+    "/app/backend/tests/test_deliberate_failures.py"
+  ],
+  "action_items": [
+    "(Optional cosmetic) Decide whether failed-run metric tiles should show '—' or 'N/A' — pick one and update either format() or the review contract.",
+    "(Carry-over from iter_3) Remove the <span data-ve-dynamic> wrapper inside <option> in ReferenceControls.tsx to stop the hydration console error."
+  ],
+  "critical_code_review_comments": [
+    "ResultsPanel.tsx statusNote logic is inlined via nested ternaries — readable now (single file) but any future 4th status branch will get messy; extract to a helper returning {tone,title,body}.",
+    "Home.tsx handleFile silently calls autoReference() without awaiting; the toast can appear after the user has already interacted further. Fine for now, but be aware the source upload and the auto-reference fetch race.",
+    "The 'Registration rejected' banner and the new results-status-note both display run.diagnostics — duplicate content. Consider suppressing the diagnostics line in run-outcome-detail when results-status-note is shown, or vice versa."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "N/A (single-operator prototype, no auth)",
+  "seed_data_creation": "No new persistent data created (existing WAC cached reference was reused; no new runs submitted).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Failed run 61f22fcc-04af-40f2-af59-c41d1de35167 and completed run 78cd45c9-9e4e-43a4-aaaf-9391b498c134 continue to be the canonical fixtures for the two ResultsPanel states. Do NOT delete them. WAC mosaic is the current best-coverage auto-reference when no lat/long is provided. Backend pytest suites in /app/backend/tests/ were NOT rerun this round — the review only asked for a single backend contract check which was done via a targeted curl and passed.",
+  "rca of the issue": "N/A — the original 'empty JSON' user confusion was correctly identified in the review as an honest backend failure. The iteration_4 frontend additions (results-status-note + upload auto-fetch toast nudge) are working as specified."
+}

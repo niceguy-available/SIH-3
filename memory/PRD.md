@@ -30,6 +30,13 @@ This app IS that project (hardened). Website/design parity confirmed — no visu
   MAX_JOB_SECONDS=120, MAX_ACTIVE_JOBS=1, MAX_QUEUED_JOBS=2.
 
 ## Implemented (2026-06)
+- **Failed/queued run clarity (bug fix)** (DONE, tested 100%). Root cause of user's "empty arrays"
+  report: uploading a close-up frame auto-matched the whole-Moon WAC mosaic → honest registration
+  FAILURE (null metrics, empty match_points) — correct backend behavior, but the UI showed silent
+  blanks. Fix (frontend): `ResultsPanel` renders `results-status-note` — failed → "No valid transform
+  found" + diagnostics + guidance (enter lat/long / upload matching-scale ref); queued/running →
+  "Registration in progress"; cancelled note. Auto-fetch-on-upload toast now nudges to enter lat/long
+  for a closer regional match. Backend unchanged (failed run correctly returns diagnostics, metrics=null).
 - **Automatic coordinate-matched LROC reference retrieval + persistent cache** (DONE, tested 100%).
   - `POST /api/catalog/auto-reference?latitude&longitude&prefer_cache` — coordinates OPTIONAL.
     With coords: matches local curated footprint DB (`match_footprints`). Without coords:
